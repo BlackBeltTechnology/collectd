@@ -5,6 +5,7 @@ package org.collectd.model;
  */
 @lombok.Getter
 @lombok.Setter
+@lombok.ToString
 public abstract class PluginData {
 
     private String host;

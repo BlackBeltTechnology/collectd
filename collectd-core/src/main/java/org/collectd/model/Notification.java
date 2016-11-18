@@ -5,7 +5,7 @@ package org.collectd.model;
  */
 @lombok.Getter
 @lombok.Setter
-@lombok.ToString
+@lombok.ToString(callSuper = true)
 public class Notification extends PluginData {
 
     private Severity severity;

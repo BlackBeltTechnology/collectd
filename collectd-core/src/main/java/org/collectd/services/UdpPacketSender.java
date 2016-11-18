@@ -100,6 +100,8 @@ public class UdpPacketSender {
             log.debug("Sending UDP packet, buffer length: " + length);
         }
         if (log.isTraceEnabled()) {
+            log.trace("Destination host: " + server.getHostString());
+            log.trace("Destination port: " + server.getPort());
             log.trace("Buffer data: " + Arrays.toString(buffer));
         }
 

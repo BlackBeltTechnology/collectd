@@ -8,7 +8,7 @@ import java.util.List;
  */
 @lombok.Getter
 @lombok.Setter
-@lombok.ToString
+@lombok.ToString(callSuper = true)
 public class Values extends PluginData {
 
     /**
@@ -26,6 +26,7 @@ public class Values extends PluginData {
      */
     @lombok.Getter
     @lombok.Setter
+    @lombok.ToString
     @lombok.AllArgsConstructor
     @lombok.NoArgsConstructor
     public static class ValueHolder {
