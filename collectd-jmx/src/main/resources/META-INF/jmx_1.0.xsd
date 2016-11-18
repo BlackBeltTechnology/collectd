@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema version="1.0"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified"
+           xmlns:jmx="http://jmx.collectd.org/xml/ns/definition"
+           targetNamespace="http://jmx.collectd.org/xml/ns/definition">
+    
+    <xs:element name="jmx" type="jmx:JmxType">
+        <xs:annotation>
+            <xs:documentation>JMX configuration element used as datasource.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    
+    <xs:complexType name="JmxType">
+        <xs:annotation>
+            <xs:documentation>JMX configuration data type.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="mbeans" type="jmx:MBeansType" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>JMX MBeans representing a set of graphs.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="version" type="jmx:VersionType" fixed="1.0" use="required">
+            <xs:annotation>
+                <xs:documentation>Version of JMX definition file.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+    
+    <xs:complexType name="MBeansType">
+        <xs:annotation>
+            <xs:documentation>JMX MBeans data type.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="mbean" type="jmx:MBeanType" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>JMX MBean representing a graph.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>Name of the graph set.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+    
+    <xs:complexType name="MBeanType">
+        <xs:annotation>
+            <xs:documentation>JMX MBean data type.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="attribute" type="jmx:MBeanAttributeType" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>JMX MBean attribute.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>Name or filter of the JMX MBean.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="alias" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>User friendly name of the metrics (graph).</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+    
+    <xs:complexType name="MBeanAttributeType">
+        <xs:annotation>
+            <xs:documentation>JMX MBean attribute data type.</xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>MBean attribute name.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="alias" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>User friendly attribute name (data series).</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="units" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>Unit of attribute data.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="type" type="jmx:DataType" use="optional" default="GAUGE">
+            <xs:annotation>
+                <xs:documentation>Attribute data type.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:simpleType name="VersionType">
+        <xs:annotation>
+            <xs:documentation>JMX definition file version type.</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:token">
+            <xs:pattern value="[0-9]+(\.[0-9]+)*"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="DataType">
+        <xs:annotation>
+            <xs:documentation>Data type.</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="COUNTER">
+                <xs:annotation>
+                    <xs:documentation>
+                        The input is an ever increasing number, e.g. an octet counter in a router. RRDtool should
+                        compute the difference between the last update and the current one, and divide it by the
+                        amount of time lapsed.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="GAUGE">
+                <xs:annotation>
+                    <xs:documentation>
+                        The input is a rate, e.g. m/s, or should be treated as a rate, e.g. temperature.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="DERIVE">
+                <xs:annotation>
+                    <xs:documentation>
+                        This is similar to COUNTER, except that the input can decrease. This is useful for instance
+                        in a kWh meter when you produce more solar power than you use. In that case you actually do
+                        get a negative rate.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="ABSOLUTE">
+                <xs:annotation>
+                    <xs:documentation>
+                        This is to be used when the counter is reset every time it is read, when people start counting
+                        from zero, and so on. The main difference between ABSOLUTE and GAUGE is that the input is not
+                        yet a rate, it should first be divided by time to get a rate. The main difference between
+                        ABSOLUTE and COUNTER is that RRDtool should not use the previous input value to compute its
+                        delta.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>

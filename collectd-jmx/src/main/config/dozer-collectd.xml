@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmx version="1.0"
+     xmlns="http://jmx.collectd.org/xml/ns/definition" 
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+     xsi:schemaLocation="http://jmx.collectd.org/xml/ns/definition ../resources/META-INF/jmx_1.0.xsd">
+    <mbeans name="dozer">
+        <mbean name="org.dozer.jmx:type=DozerStatisticsController" alias="Cache">
+            <attribute name="CacheHitCount" alias="cache hits"/>
+            <attribute name="CacheMissCount" alias="cache misses"/>
+        </mbean>
+        <mbean name="org.dozer.jmx:type=DozerStatisticsController" alias="FieldMapping">
+            <attribute name="FieldMappingFailureCount" alias="field mapping failures"/>
+            <attribute name="FieldMappingSuccessCount" alias="field mapping success"/>
+        </mbean>
+        <mbean name="org.dozer.jmx:type=DozerStatisticsController" alias="Mapping">
+            <attribute name="MappingFailureCount" alias="mapping failures"/>
+            <attribute name="MappingSuccessCount" alias="mapping success"/>
+        </mbean>
+    </mbeans>
+</jmx>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmx version="1.0"
+     xmlns="http://jmx.collectd.org/xml/ns/definition" 
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+     xsi:schemaLocation="http://jmx.collectd.org/xml/ns/definition ../resources/META-INF/jmx_1.0.xsd">
+    <mbeans name="ehcache">
+        <mbean name="net.sf.ehcache:type=CacheStatistics,CacheManager=__DEFAULT__,*" alias="Objects">
+            <attribute name="ObjectCount" alias="objects"/>
+            <attribute name="DiskStoreObjectCount" alias="DiskStore objects"/>
+            <attribute name="MaxTotal" alias="max total"/>
+            <attribute name="WriterQueueLength" alias="queue length"/>
+        </mbean>
+        <mbean name="net.sf.ehcache:type=CacheStatistics,CacheManager=__DEFAULT__,*" alias="HitsAndMisses">
+            <attribute name="CacheHits" alias="cache hits"/>
+            <attribute name="CacheMisses" alias="cache misses"/>
+        </mbean>
+    </mbeans>
+</jmx>

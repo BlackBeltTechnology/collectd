@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmx version="1.0"
+     xmlns="http://jmx.collectd.org/xml/ns/definition" 
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+     xsi:schemaLocation="http://jmx.collectd.org/xml/ns/definition ../resources/META-INF/jmx_1.0.xsd">
+    <mbeans name="tomcat">
+        <mbean name="Catalina:type=GlobalRequestProcessor,*" alias="GRP">
+            <attribute name="bytesReceived" alias="received" units="bytes" type="COUNTER"/>
+            <attribute name="bytesSent" alias="sent" units="bytes" type="COUNTER"/>
+            <attribute name="errorCount" alias="errors" type="COUNTER"/>
+        </mbean>
+    </mbeans>
+</jmx>

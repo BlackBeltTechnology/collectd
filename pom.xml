@@ -97,5 +97,6 @@
         <module>collectd-osgi</module>
         <module>collectd-commands</module>
         <module>collectd-feature</module>
+        <module>collectd-jmx</module>
     </modules>
 </project>
