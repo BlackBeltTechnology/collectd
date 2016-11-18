@@ -3,6 +3,7 @@ package org.collectd.services;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.net.SocketException;
@@ -10,6 +11,7 @@ import java.util.Arrays;
 import lombok.extern.slf4j.Slf4j;
 import org.collectd.config.CollectdConstants;
 import org.collectd.model.Notification;
+import org.collectd.model.PluginData;
 import org.collectd.model.Values;
 import org.collectd.protocol.UdpBufferWriter;
 
@@ -25,24 +27,28 @@ public class UdpPacketSender {
 
     private DatagramSocket socket;
     private MulticastSocket mcast;
+    
+    private String client;
 
     /**
      * Create new UDP packet writer instance. Default packet size is used.
      *
-     * @param server collectd server address
+     * @param server Collectd server address
      */
     public UdpPacketSender(final InetSocketAddress server) {
-        this(server, CollectdConstants.DEFAULT_PACKET_SIZE);
+        this(server, null, CollectdConstants.DEFAULT_PACKET_SIZE);
     }
 
     /**
      * Create new UDP packet writer instance.
      *
-     * @param server collectd server address
+     * @param server Collectd server address
+     * @param clientHost client hostname
      * @param packetSize packet size
      */
-    public UdpPacketSender(final InetSocketAddress server, final int packetSize) {
+    public UdpPacketSender(final InetSocketAddress server, final String clientHost, final int packetSize) {
         this.server = server;
+        this.client = clientHost;
         writer = new UdpBufferWriter(packetSize);
     }
 
@@ -53,8 +59,9 @@ public class UdpPacketSender {
      * @throws IOException unable to write value to output stream
      */
     public void send(final Values valueList) throws IOException {
+        setDefaults(valueList);
+        
         writer.writeKeyParts(valueList);
-
         writer.writeValuesPart(valueList.getItems(), valueList.getInterval());
 
         flush();
@@ -67,11 +74,33 @@ public class UdpPacketSender {
      * @throws IOException unable to write value to output stream
      */
     public void send(final Notification notification) throws IOException {
+        setDefaults(notification);
+        
         writer.writeKeyParts(notification);
-
         writer.writeNotificationPart(notification.getSeverity(), notification.getMessage());
 
         flush();
+    }
+
+    private String getClient() {
+        if (client == null) {
+            try {
+                client = InetAddress.getLocalHost().getHostName();
+            } catch (IOException ex) {
+                log.error("Unable to get host name", ex);
+                client = "unknown";
+            }
+        }
+        return client;
+    }
+
+    private void setDefaults(final PluginData data) {
+        if (data.getHost() == null) {
+            data.setHost(getClient());
+        }
+        if (data.getTime() <= 0) {
+            data.setTime(System.currentTimeMillis());
+        }
     }
 
     private DatagramSocket getSocket() throws SocketException {

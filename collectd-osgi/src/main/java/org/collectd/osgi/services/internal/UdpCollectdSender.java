@@ -1,12 +1,10 @@
 package org.collectd.osgi.services.internal;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import lombok.extern.slf4j.Slf4j;
 import org.collectd.config.CollectdConstants;
 import org.collectd.model.Notification;
-import org.collectd.model.PluginData;
 import org.collectd.model.Values;
 import org.collectd.osgi.services.CollectdSender;
 import org.collectd.services.UdpPacketSender;
@@ -42,8 +40,7 @@ public class UdpCollectdSender implements CollectdSender {
     }
 
     private UdpPacketSender sender;
-    private String host;
-
+    
     /**
      * Initialize OSGi component.
      * 
@@ -54,9 +51,8 @@ public class UdpCollectdSender implements CollectdSender {
     public void startOsgiComponent(final Config config) {
         final InetSocketAddress server = new InetSocketAddress(config.stats_collectd_host(), config.stats_collectd_port());
         final int packetSize = config.stats_collectd_packetSize();
-        
-        host = config.stats_collectd_clientHost();
-        sender = new UdpPacketSender(server, packetSize);
+        final String clientHost = config.stats_collectd_clientHost();
+        sender = new UdpPacketSender(server, clientHost, packetSize);
     }
 
     /**
@@ -64,39 +60,16 @@ public class UdpCollectdSender implements CollectdSender {
      */
     @Deactivate
     public void stopOsgiComponent() {
-        host = null;
         sender = null;
     }
 
-    private String getHost() {
-        if (host == null) {
-            try {
-                host = InetAddress.getLocalHost().getHostName();
-            } catch (IOException ex) {
-                log.error("Unable to get host name", ex);
-                host = "unknown";
-            }
-        }
-        return host;
-    }
-
-    private void setDefaults(final PluginData data) {
-        if (data.getHost() == null) {
-            data.setHost(getHost());
-        }
-        if (data.getTime() <= 0) {
-            data.setTime(System.currentTimeMillis());
-        }
-    }
-
     /**
-     * Send numeric values (metrics) to collectd.
+     * Send numeric values (metrics) to Collectd.
      * 
      * @param values numeric values
      */
     @Override
     public void send(final Values values) {
-        setDefaults(values);
         try {
             sender.send(values);
         } catch (IOException ex) {
@@ -105,13 +78,12 @@ public class UdpCollectdSender implements CollectdSender {
     }
 
     /**
-     * Send notification to collectd.
+     * Send notification to Collectd.
      * 
      * @param notification notification
      */
     @Override
     public void send(final Notification notification) {
-        setDefaults(notification);
         try {
             sender.send(notification);
         } catch (IOException ex) {
