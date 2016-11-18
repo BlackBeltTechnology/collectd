@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<features xmlns="http://karaf.apache.org/xmlns/features/v1.3.0" name="collectd-features-${project.version}" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://karaf.apache.org/xmlns/features/v1.3.0 https://karaf.apache.org/xmlns/features/v1.3.0">
+    <feature name="collectd" description="Bundles for Collectd" version="${project.version}">
+        <bundle start-level="70">mvn:${project.groupId}/collectd-core/${project.version}</bundle>
+        <bundle start-level="75">mvn:${project.groupId}/collectd-osgi/${project.version}</bundle>
+        <bundle start-level="80">mvn:${project.groupId}/collectd-commands/${project.version}</bundle>
+    </feature>
+</features>

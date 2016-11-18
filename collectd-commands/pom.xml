@@ -1,0 +1,56 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    
+    <parent>
+        <groupId>hu.blackbelt</groupId>
+        <artifactId>collectd</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>collectd-commands</artifactId>
+    <packaging>bundle</packaging>
+
+    <name>Collectd Karaf commands</name>
+    <description>Apache Karaf commands for Collectd.</description>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <configuration>
+                    <instructions>
+                        <Import-Package>
+                            org.apache.felix.service.command,
+                            org.apache.karaf.shell.commands,
+                            org.apache.karaf.shell.console,
+                            *
+                        </Import-Package>
+                        <Karaf-Commands>*</Karaf-Commands>
+                    </instructions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>collectd-osgi</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.apache.karaf.shell</groupId>
+            <artifactId>org.apache.karaf.shell.console</artifactId>
+            <version>${karaf.version}</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+    
+    <properties>
+        <karaf.version>4.0.7</karaf.version>
+    </properties>
+</project>
