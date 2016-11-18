@@ -96,6 +96,6 @@
         <module>collectd-core</module>
         <module>collectd-osgi</module>
         <module>collectd-commands</module>
-		<module>collectd-feature</module>
+        <module>collectd-feature</module>
     </modules>
 </project>

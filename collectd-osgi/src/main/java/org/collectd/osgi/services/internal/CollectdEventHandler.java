@@ -22,7 +22,6 @@ import org.osgi.service.event.EventHandler;
     EventConstants.EVENT_TOPIC + "=" + CollectdEventProperty.EVENT_TOPIC,
     EventConstants.EVENT_DELIVERY + "=" + EventConstants.DELIVERY_ASYNC_UNORDERED})
 @Slf4j
-@SuppressWarnings("")
 public class CollectdEventHandler implements EventHandler {
 
     @Reference(cardinality = ReferenceCardinality.MULTIPLE, policyOption = ReferencePolicyOption.GREEDY)
