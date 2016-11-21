@@ -1,7 +1,7 @@
 package org.collectd.model;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 
 /**
  * Numeric values data type.
@@ -14,7 +14,7 @@ public class Values extends PluginData {
     /**
      * Numeric values (items).
      */
-    private final List<ValueHolder> items = new ArrayList<>();
+    private final Collection<ValueHolder> items = new ArrayList<>();
 
     /**
      * Interval used to set the "step" when creating new RRDs unless rrdtool plugin forces StepSize.

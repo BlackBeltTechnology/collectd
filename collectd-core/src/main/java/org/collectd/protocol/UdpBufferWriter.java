@@ -6,7 +6,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.List;
+import java.util.Collection;
+import java.util.Iterator;
 import lombok.extern.slf4j.Slf4j;
 import org.collectd.config.CollectdConstants;
 import org.collectd.model.PluginData;
@@ -91,25 +92,26 @@ public class UdpBufferWriter {
      * @throws IOException unable to write value to output stream
      */
     @SuppressFBWarnings("DB_DUPLICATE_SWITCH_CLAUSES")
-    public void writeValuesPart(final List<Values.ValueHolder> values, final Long interval) throws IOException {
+    public void writeValuesPart(final Collection<Values.ValueHolder> values, final Long interval) throws IOException {
         final int num = values.size();
         final int len = HEADER_LEN + UINT16_LEN + num * (UINT8_LEN + UINT64_LEN);
 
         final byte[] types = new byte[num];
-        for (int i = 0; i < num; i++) {
-            final Values.ValueHolder holder = values.get(i);
+        int idx = 0;
+        for (final Iterator<Values.ValueHolder> it = values.iterator(); it.hasNext(); idx++) {
+            final Values.ValueHolder holder = it.next();
             final Number value = holder.getValue();
 
             if (holder.getType() == null) {
                 if (value instanceof Double) {
-                    types[i] = ValueType.GAUGE.getCode();
+                    types[idx] = ValueType.GAUGE.getCode();
                     holder.setType(ValueType.GAUGE);
                 } else {
-                    types[i] = ValueType.COUNTER.getCode();
+                    types[idx] = ValueType.COUNTER.getCode();
                     holder.setType(ValueType.COUNTER);
                 }
             } else {
-                types[i] = holder.getType().getCode();
+                types[idx] = holder.getType().getCode();
             }
         }
 

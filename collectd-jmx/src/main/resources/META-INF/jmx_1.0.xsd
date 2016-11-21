@@ -50,10 +50,10 @@
     
     <xs:complexType name="MBeanType">
         <xs:annotation>
-            <xs:documentation>JMX MBean data type.</xs:documentation>
+            <xs:documentation>JMX MBean data type. All attributes are returned of no one defined.</xs:documentation>
         </xs:annotation>
         <xs:sequence>
-            <xs:element name="attribute" type="jmx:MBeanAttributeType" maxOccurs="unbounded">
+            <xs:element name="attribute" type="jmx:MBeanAttributeType" minOccurs="0" maxOccurs="unbounded">
                 <xs:annotation>
                     <xs:documentation>JMX MBean attribute.</xs:documentation>
                 </xs:annotation>
@@ -78,6 +78,11 @@
         <xs:attribute name="name" type="xs:string" use="required">
             <xs:annotation>
                 <xs:documentation>MBean attribute name.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="composite" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>MBean composite attribute key (only for composite attributes).</xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="alias" type="xs:string" use="optional">

@@ -2,43 +2,104 @@ package org.collectd.jmx.services;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import javax.management.JMException;
 import javax.management.MBeanServerConnection;
-import javax.management.remote.JMXConnector;
+import javax.management.ObjectName;
+import javax.management.openmbean.CompositeData;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
+import lombok.extern.slf4j.Slf4j;
+import org.collectd.jmx.internal.Controller;
 import org.collectd.jmx.xml.ns.definition.Jmx;
-import org.collectd.model.PluginData;
+import org.collectd.jmx.xml.ns.definition.MBeanAttributeType;
+import org.collectd.jmx.xml.ns.definition.MBeanType;
+import org.collectd.jmx.xml.ns.definition.MBeansType;
+import org.collectd.model.ValueType;
+import org.collectd.model.Values;
+import org.collectd.services.UdpPacketSender;
 
 /**
  * Collect JMX metrics for sending to Collectd.
  */
-public class Collector {
+@Slf4j
+public class Collector implements Runnable {
 
-    private MBeanServerConnection connection;
+    private final JMXServiceURL serviceUrl;
+    private final Controller.Config config;
 
-    /**
-     * Create new local JMX collector instance.
-     */
-    public Collector() {
-        configure(ManagementFactory.getPlatformMBeanServer());
+    private Collection<Jmx> jmxList;
+    private UdpPacketSender packetSender;
+
+    private transient MBeanServerConnection connection;
+    private String instance;
+
+    private static final String RUNTIME_NAME = "java.lang:type=Runtime";
+
+    public Collector(final Controller.Config config, final Collection<Jmx> jmxList) {
+        Objects.requireNonNull(config, "Missing configuration");
+        Objects.requireNonNull(jmxList, "Missing JMX configuration");
+
+        this.config = config;
+        this.jmxList = jmxList;
+
+        final InetSocketAddress destination = new InetSocketAddress(config.getHost(), config.getPort());
+        this.packetSender = new UdpPacketSender(destination, config.getClient(), config.getPacketSize());
+
+        final String jmxUrl = config.getJmxUrl();
+        try {
+            serviceUrl = jmxUrl != null ? new JMXServiceURL(jmxUrl.indexOf('/') == -1 ? "service:jmx:rmi:///jndi/rmi://" + jmxUrl + "/jmxrmi" : jmxUrl) : null;
+        } catch (MalformedURLException ex) {
+            throw new IllegalArgumentException("Invalid JMX url", ex);
+        }
+
+        if (config.getInstance() != null) {
+            instance = config.getInstance();
+        } else {
+            try {
+                instance = getMBeanName(new ObjectName(RUNTIME_NAME));
+            } catch (JMException ex) {
+                log.warn("Unable to get instance name", ex);
+            }
+            if (instance == null) {
+                instance = ManagementFactory.getRuntimeMXBean().getName();
+            }
+        }
     }
 
-    /**
-     * Create new remote JMX collector instance.
-     *
-     * @param url JMX URL
-     * @throws IOException JMX connection failure
-     */
-    public Collector(final String url) throws IOException {
-        final JMXServiceURL serviceUrl = new JMXServiceURL(url.indexOf('/') == -1 ? "service:jmx:rmi:///jndi/rmi://" + url + "/jmxrmi" : url);
-        final JMXConnector connector = JMXConnectorFactory.connect(serviceUrl);
-
-        configure(connector.getMBeanServerConnection());
+    private MBeanServerConnection getConnection() {
+        try {
+            if (connection == null) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Connecting to JMX service: " + serviceUrl);
+                }
+                connection = serviceUrl != null ? JMXConnectorFactory.connect(serviceUrl).getMBeanServerConnection() : ManagementFactory.getPlatformMBeanServer();
+            }
+        } catch (IOException ex) {
+            throw new IllegalStateException("JMX connection failed", ex);
+        }
+        return connection;
     }
 
-    private void configure(final MBeanServerConnection connection) {
-        this.connection = connection;
+    @Override
+    public void run() {
+        final Collection<Values> data = collectData();
+
+        for (final Values values : data) {
+            try {
+                packetSender.send(values);
+            } catch (IOException ex) {
+                log.error("Unable to send metrics", ex);
+            }
+        }
     }
 
     /**
@@ -47,7 +108,132 @@ public class Collector {
      * @param jmx JMX configuration
      * @return metrics data
      */
-    public List<PluginData> collect(final Jmx jmx) {
-        return null;
+    private Collection<Values> collectData() {
+        final List<Values> data = new LinkedList<>();
+
+        for (final Jmx jmx : jmxList) {
+            for (final MBeansType mbeans : jmx.getMbeans()) {
+                final String plugin = mbeans.getName();
+                if (log.isTraceEnabled()) {
+                    log.trace("Collectding data for plugin '" + plugin + "'");
+                }
+
+                for (final MBeanType mbean : mbeans.getMbeen()) {
+                    try {
+                        data.addAll(getMetrics(plugin, mbean, true));
+                    } catch (JMException ex) {
+                        log.error("Unable to get metrics for " + mbean.getName(), ex);
+                    }
+                }
+            }
+        }
+
+        return data;
+    }
+
+    private Collection<Values> getMetrics(final String plugin, final MBeanType mbean, final boolean retry) throws JMException {
+        final Collection<Values> valueList = new LinkedList<>();
+
+        final ObjectName name = new ObjectName(mbean.getName());
+        if (log.isTraceEnabled()) {
+            log.trace("  - reading MBean: " + name);
+        }
+
+        final Collection<ObjectName> objectNames;
+        if (name.isPattern()) {
+            try {
+                final MBeanServerConnection conn = getConnection();
+                objectNames = conn.queryNames(name, null);
+            } catch (IOException ex) {
+                if (retry) {
+                    log.error("Failed to get object names, retrying...", ex);
+                    return getMetrics(plugin, mbean, false);
+                } else {
+                    throw new IllegalStateException("Failed to get object names", ex);
+                }
+            }
+        } else {
+            objectNames = Arrays.asList(name);
+        }
+
+        for (final ObjectName objectName : objectNames) {
+            if (mbean.getAttributes().isEmpty()) {
+                // TODO - get all attributes
+            } else {
+                for (final MBeanAttributeType mbeanAttribute : mbean.getAttributes()) {
+                    final Values values = new Values();
+                    values.setHost(config.getClient());
+                    values.setPlugin(plugin);
+                    values.setPluginInstance(instance);
+                    values.setInterval(config.getInterval());
+                    if (name.isPattern()) {
+                        values.setType(mbean.getAlias() != null ? mbean.getAlias() + "-" + getMBeanName(objectName) : getMBeanName(objectName));
+                    } else {
+                        values.setType(mbean.getAlias() != null ? mbean.getAlias() : getMBeanName(objectName));
+                    }
+
+                    values.setTypeInstance(mbeanAttribute.getAlias() != null ? mbeanAttribute.getAlias() : mbeanAttribute.getName());
+                    final Values.ValueHolder holder = getAttrbituteMetrics(objectName, mbeanAttribute);
+                    if (holder != null) {
+                        values.getItems().add(holder);
+                    }
+
+                    valueList.add(values);
+                }
+            }
+        }
+
+        return valueList;
+    }
+
+    private Values.ValueHolder getAttrbituteMetrics(final ObjectName objectName, final MBeanAttributeType mbeanAttribute) throws JMException {
+        final String attrName = mbeanAttribute.getName();
+        final Object attr = getAttribute(objectName, attrName, true);
+
+        final Object data;
+        if (mbeanAttribute.getComposite() != null) {
+            if (attr instanceof CompositeData) {
+                final CompositeData compositeData = (CompositeData) attr;
+                data = compositeData.get(mbeanAttribute.getComposite());
+            } else {
+                log.warn("Composite data expected for MBean " + objectName + ", attribute " + attrName);
+                return null;
+            }
+        } else {
+            data = attr;
+        }
+
+        final ValueType type = ValueType.valueOf(mbeanAttribute.getType().value());
+        if (data instanceof Number) {
+            if (log.isTraceEnabled()) {
+                log.trace("    - value of attribute '" + attrName + "': " + data + (mbeanAttribute.getComposite() != null ? " " + mbeanAttribute.getComposite() : ""));
+            }
+            return new Values.ValueHolder(type, (Number) data);
+        } else {
+            log.warn("Invalid numeric data for MBean " + objectName + ", attribute " + attrName);
+            return null;
+        }
+    }
+
+    private String getMBeanName(final ObjectName objectName) throws JMException {
+        try {
+            return (String) getConnection().getAttribute(objectName, "Name");
+        } catch (IOException ex) {
+            log.error("Failed to get name of " + objectName);
+            return null;
+        }
+    }
+
+    private Object getAttribute(final ObjectName name, final String attribute, final boolean retry) throws JMException {
+        try {
+            return getConnection().getAttribute(name, attribute);
+        } catch (IOException ex) {
+            if (retry) {
+                log.error("Failed to get attribute, retrying...", ex);
+                return getAttribute(name, attribute, false);
+            } else {
+                throw new IllegalStateException("Failed to get attribute", ex);
+            }
+        }
     }
 }
