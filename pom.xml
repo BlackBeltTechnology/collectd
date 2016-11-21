@@ -98,5 +98,6 @@
         <module>collectd-commands</module>
         <module>collectd-feature</module>
         <module>collectd-jmx</module>
+        <module>collectd-jmx-agent</module>
     </modules>
 </project>

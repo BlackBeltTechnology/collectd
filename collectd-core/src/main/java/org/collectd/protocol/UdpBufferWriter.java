@@ -6,12 +6,11 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Collection;
 import java.util.Iterator;
 import lombok.extern.slf4j.Slf4j;
 import org.collectd.config.CollectdConstants;
+import org.collectd.model.Notification;
 import org.collectd.model.PluginData;
-import org.collectd.model.Severity;
 import org.collectd.model.ValueType;
 import org.collectd.model.Values;
 
@@ -23,6 +22,8 @@ public class UdpBufferWriter {
 
     private final ByteArrayOutputStream bos;
     private final DataOutputStream os;
+    
+    private final int packetSize;
 
     private static final int UINT8_LEN = 1;
     private static final int UINT16_LEN = UINT8_LEN * 2;
@@ -43,6 +44,7 @@ public class UdpBufferWriter {
      * @param packetSize packet size
      */
     public UdpBufferWriter(final int packetSize) {
+        this.packetSize = packetSize;
         bos = new ByteArrayOutputStream(packetSize);
         os = new DataOutputStream(bos);
     }
@@ -52,8 +54,7 @@ public class UdpBufferWriter {
      *
      * @throws IOException unable to write value to output stream
      */
-    public synchronized byte[] getBuffer() throws IOException {
-        os.flush();
+    public synchronized byte[] getBuffer() {
         final byte[] buffer;
         synchronized (this) {
             buffer = bos.toByteArray();
@@ -61,6 +62,41 @@ public class UdpBufferWriter {
         }
 
         return buffer;
+    }
+
+    public byte[] checkSpace(final Values values) throws IOException {
+        final int length = getKeyPartsLength(values) + getValuesPartLength(values);
+        if (length > packetSize) {
+            throw new IllegalArgumentException("Values data size is greater than maximum packet size: " + packetSize);
+        }
+        
+        if (bos.size() + length > packetSize) {
+            return getBuffer();
+        } else {
+            return null;
+        }
+    }
+
+    public byte[] checkSpace(final Notification notification) throws IOException {
+        final int length = getKeyPartsLength(notification) + getNotificationPartLength(notification);
+        if (length > packetSize) {
+            throw new IllegalArgumentException("Notification size is greater than maximum packet size: " + packetSize);
+        }
+        
+        if (bos.size() + length > packetSize) {
+            return getBuffer();
+        } else {
+            return null;
+        }
+    }
+
+    private int getKeyPartsLength(final PluginData data) {
+        return getStringPartLength(data.getHost())
+                + getNumberPartLength(data.getTime() / 1000)
+                + getStringPartLength(data.getPlugin())
+                + getStringPartLength(data.getPluginInstance())
+                + getStringPartLength(data.getType())
+                + getStringPartLength(data.getTypeInstance());
     }
 
     /**
@@ -73,15 +109,14 @@ public class UdpBufferWriter {
         writeStringPart(PacketPartType.HOST.getCode(), data.getHost());
         writeNumberPart(PacketPartType.TIME.getCode(), data.getTime() / 1000);
         writeStringPart(PacketPartType.PLUGIN.getCode(), data.getPlugin());
-        if (data.getPluginInstance() != null) {
-            writeStringPart(PacketPartType.PLUGIN_INSTANCE.getCode(), data.getPluginInstance());
-        }
-        if (data.getType() != null) {
-            writeStringPart(PacketPartType.TYPE.getCode(), data.getType());
-        }
-        if (data.getTypeInstance() != null) {
-            writeStringPart(PacketPartType.TYPE_INSTANCE.getCode(), data.getTypeInstance());
-        }
+        writeStringPart(PacketPartType.PLUGIN_INSTANCE.getCode(), data.getPluginInstance());
+        writeStringPart(PacketPartType.TYPE.getCode(), data.getType());
+        writeStringPart(PacketPartType.TYPE_INSTANCE.getCode(), data.getTypeInstance());
+    }
+
+    private int getValuesPartLength(final Values values) {
+        final int num = values.getItems().size();
+        return num > 0 ? HEADER_LEN + UINT16_LEN + num * (UINT8_LEN + UINT64_LEN) : 0;
     }
 
     /**
@@ -92,13 +127,18 @@ public class UdpBufferWriter {
      * @throws IOException unable to write value to output stream
      */
     @SuppressFBWarnings("DB_DUPLICATE_SWITCH_CLAUSES")
-    public void writeValuesPart(final Collection<Values.ValueHolder> values, final Long interval) throws IOException {
-        final int num = values.size();
-        final int len = HEADER_LEN + UINT16_LEN + num * (UINT8_LEN + UINT64_LEN);
+    public void writeValuesPart(final Values values) throws IOException {
+        final int num = values.getItems().size();
+        if (num == 0) {
+            return;
+        }
+
+        writeKeyParts(values);
+        final int len = getValuesPartLength(values);
 
         final byte[] types = new byte[num];
         int idx = 0;
-        for (final Iterator<Values.ValueHolder> it = values.iterator(); it.hasNext(); idx++) {
+        for (final Iterator<Values.ValueHolder> it = values.getItems().iterator(); it.hasNext(); idx++) {
             final Values.ValueHolder holder = it.next();
             final Number value = holder.getValue();
 
@@ -119,7 +159,7 @@ public class UdpBufferWriter {
         writeShortValue(num);
         os.write(types);
 
-        for (final Values.ValueHolder holder : values) {
+        for (final Values.ValueHolder holder : values.getItems()) {
             final Number value = holder.getValue();
             final ValueType type = holder.getType();
 
@@ -146,9 +186,13 @@ public class UdpBufferWriter {
             }
         }
 
-        if (interval != null) {
-            writeNumberPart(PacketPartType.INTERVAL.getCode(), interval);
+        if (values.getInterval() != null) {
+            writeNumberPart(PacketPartType.INTERVAL.getCode(), values.getInterval());
         }
+    }
+
+    private int getNotificationPartLength(final Notification notification) {
+        return (notification.getSeverity() != null ? getNumberPartLength(notification.getSeverity().getCode()) : 0) + getStringPartLength(notification.getMessage());
     }
 
     /**
@@ -158,12 +202,14 @@ public class UdpBufferWriter {
      * @param message message
      * @throws IOException unable to write value to output stream
      */
-    public void writeNotificationPart(final Severity severity, final String message) throws IOException {
-        if (severity != null) {
-            writeNumberPart(PacketPartType.SEVERITY.getCode(), severity.getCode());
+    public void writeNotificationPart(final Notification notification) throws IOException {
+        writeKeyParts(notification);
+
+        if (notification.getSeverity() != null) {
+            writeNumberPart(PacketPartType.SEVERITY.getCode(), notification.getSeverity().getCode());
         }
 
-        writeStringPart(PacketPartType.MESSAGE.getCode(), message);
+        writeStringPart(PacketPartType.MESSAGE.getCode(), notification.getMessage());
     }
 
     private void writeHeader(final short type, final int len) throws IOException {
@@ -199,17 +245,25 @@ public class UdpBufferWriter {
         }
     }
 
+    private int getStringPartLength(final String val) {
+        return val != null && val.length() > 0 ? HEADER_LEN + val.length() + 1 : 0;
+    }
+
     private void writeStringPart(final short type, final String val) throws IOException {
         if (val == null || val.length() == 0) {
             return;
         }
-        final int len = HEADER_LEN + val.length() + 1;
+        final int len = getStringPartLength(val);
         writeHeader(type, len);
         writeStringValue(val, true);
     }
 
+    private int getNumberPartLength(final long val) {
+        return HEADER_LEN + UINT64_LEN;
+    }
+
     private void writeNumberPart(final short type, final long val) throws IOException {
-        final int len = HEADER_LEN + UINT64_LEN;
+        final int len = getNumberPartLength(val);
         writeHeader(type, len);
         writeLongOrDateValue(val);
     }

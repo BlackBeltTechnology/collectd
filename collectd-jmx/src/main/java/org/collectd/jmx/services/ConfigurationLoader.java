@@ -1,4 +1,4 @@
-package org.collectd.jmx.internal;
+package org.collectd.jmx.services;
 
 import java.io.File;
 import java.io.InputStream;

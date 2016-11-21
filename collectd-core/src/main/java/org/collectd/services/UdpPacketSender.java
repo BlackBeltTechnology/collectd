@@ -55,16 +55,18 @@ public class UdpPacketSender {
     /**
      * Write value list. Signature and encrypted parts are not supported yet.
      *
-     * @param valueList numeric value list
+     * @param values numeric value list
      * @throws IOException unable to write value to output stream
      */
-    public void send(final Values valueList) throws IOException {
-        setDefaults(valueList);
+    public void send(final Values values) throws IOException {
+        setDefaults(values);
         
-        writer.writeKeyParts(valueList);
-        writer.writeValuesPart(valueList.getItems(), valueList.getInterval());
-
-        flush();
+        final byte[] bufferToSend = writer.checkSpace(values);
+        if (bufferToSend != null) {
+            flush(bufferToSend);
+        }
+        
+        writer.writeValuesPart(values);
     }
 
     /**
@@ -76,10 +78,16 @@ public class UdpPacketSender {
     public void send(final Notification notification) throws IOException {
         setDefaults(notification);
         
-        writer.writeKeyParts(notification);
-        writer.writeNotificationPart(notification.getSeverity(), notification.getMessage());
+        final byte[] bufferToSend = writer.checkSpace(notification);
+        if (bufferToSend != null) {
+            flush(bufferToSend);
+        }
+        
+        writer.writeNotificationPart(notification);
+    }
 
-        flush();
+    public void flush() throws IOException {
+        flush(writer.getBuffer());
     }
 
     private String getClient() {
@@ -117,9 +125,8 @@ public class UdpPacketSender {
         }
         return mcast;
     }
-
-    private void flush() throws IOException {
-        final byte[] buffer = writer.getBuffer();
+    
+    private void flush(final byte[] buffer) throws IOException {
         final int length = buffer.length;
         if (length == 0) {
             return;

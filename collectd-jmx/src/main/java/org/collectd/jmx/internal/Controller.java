@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.collectd.config.CollectdConstants;
 import org.collectd.jmx.services.Collector;
+import org.collectd.jmx.services.ConfigurationLoader;
 import org.collectd.jmx.xml.ns.definition.Jmx;
 
 @Slf4j

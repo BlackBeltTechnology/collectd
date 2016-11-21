@@ -60,6 +60,13 @@ public class UdpCollectdSender implements CollectdSender {
      */
     @Deactivate
     public void stopOsgiComponent() {
+        if (sender != null) {
+            try {
+                sender.flush();
+            } catch (IOException ex) {
+                log.error("Unable to flush buffer", ex);
+            }
+        }
         sender = null;
     }
 
