@@ -21,6 +21,8 @@ public class Controller {
     public static final long DEFAULT_SCHEDULER_INTERVAL = 1000L;
 
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1, new CollectorThreadFactory());
+    
+    private final Collector collector;
 
     public Controller(final Collection<String> configFiles) {
         this(configFiles, DEFAULT_SCHEDULER_INTERVAL);
@@ -40,12 +42,13 @@ public class Controller {
         
         final Config config = Config.initFromCommandLine();
 
-        final Collector collector = new Collector(config, configs);
+        collector = new Collector(config, configs);
         scheduler.scheduleAtFixedRate(collector, 0, config.getInterval(), TimeUnit.MILLISECONDS);
     }
     
     public void shutdown() {
         scheduler.shutdownNow();
+        collector.tearDown();
     }
 
     private static class CollectorThreadFactory implements ThreadFactory {

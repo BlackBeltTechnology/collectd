@@ -99,6 +99,14 @@ public class Collector implements Runnable {
             }
         }
     }
+    
+    public void tearDown() {
+        try {
+            packetSender.flush();
+        } catch (IOException ex) {
+            log.error("Unable to flush UDP packet sender", ex);
+        }
+    }
 
     /**
      * Collect metrics and return data in Collectd structure.
