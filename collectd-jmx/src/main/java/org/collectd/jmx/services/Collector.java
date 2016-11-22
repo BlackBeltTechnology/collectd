@@ -90,14 +90,18 @@ public class Collector implements Runnable {
 
     @Override
     public void run() {
-        final Collection<Values> data = collectData();
+        try {
+            final Collection<Values> data = collectData();
 
-        for (final Values values : data) {
-            try {
-                packetSender.send(values);
-            } catch (IOException ex) {
-                log.error("Unable to send metrics", ex);
+            for (final Values values : data) {
+                try {
+                    packetSender.send(values);
+                } catch (IOException ex) {
+                    log.error("Unable to send metrics", ex);
+                }
             }
+        } catch (RuntimeException ex2) {
+            log.error("Failed to send metrics", ex2);
         }
     }
 
