@@ -5,14 +5,14 @@
      xsi:schemaLocation="http://jmx.collectd.org/xml/ns/definition ../../../../collectd-jmx/src/main/resources/META-INF/jmx_1.0.xsd">
     <mbeans name="jmx_ehcache">
         <mbean name="net.sf.ehcache:type=CacheStatistics,CacheManager=__DEFAULT__,*" type="ehcache_objects">
-            <attribute name="ObjectCount" typeInstance="mem_objects" type="COUNTER"/>
-            <attribute name="DiskStoreObjectCount" typeInstance="disk_objects" type="COUNTER"/>
-            <attribute name="MaxTotal" typeInstance="max" type="GAUGE"/>
-            <attribute name="WriterQueueLength" typeInstance="queue" type="GAUGE"/>
+            <attribute name="ObjectCount" index="0" type="COUNTER"/>
+            <attribute name="DiskStoreObjectCount" index="1" type="COUNTER"/>
+            <attribute name="MaxTotal" index="2" type="GAUGE"/>
+            <attribute name="WriterQueueLength" index="3" type="GAUGE"/>
         </mbean>
         <mbean name="net.sf.ehcache:type=CacheStatistics,CacheManager=__DEFAULT__,*" type="ehcache_stats">
-            <attribute name="CacheHits" typeInstance="hits" type="COUNTER"/>
-            <attribute name="CacheMisses" typeInstance="misses" type="COUNTER"/>
+            <attribute name="CacheHits" index="0" type="COUNTER"/>
+            <attribute name="CacheMisses" index="1" type="COUNTER"/>
         </mbean>
     </mbeans>
 </jmx>
