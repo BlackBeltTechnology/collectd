@@ -140,7 +140,7 @@ public class UdpPacketSender {
     }
 
     private void flush(final byte[] buffer) throws IOException {
-        final int length = buffer.length;
+        final int length = buffer != null ? buffer.length : 0;
         if (length == 0) {
             return;
         }

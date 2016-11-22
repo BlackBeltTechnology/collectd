@@ -64,7 +64,7 @@ public class Collector implements Runnable {
             instance = config.getInstance();
         } else {
             try {
-                instance = getMBeanName(new ObjectName(RUNTIME_NAME));
+                instance = (String) getAttribute(new ObjectName(RUNTIME_NAME), "Name", false);
             } catch (JMException ex) {
                 log.warn("Unable to get instance name", ex);
             }
@@ -180,13 +180,14 @@ public class Collector implements Runnable {
                 final Values.ValueHolder[] items = new Values.ValueHolder[mbean.getAttributes().size()];
 
                 int index = 0;
+                boolean valid = true;
                 for (final Iterator<MBeanAttributeType> it = mbean.getAttributes().iterator(); it.hasNext(); index++) {
                     final MBeanAttributeType mbeanAttribute = it.next();
 
                     if (name.isPattern() && mbean.getType() != null) {
                         values.setType(mbean.getType());
                         values.setTypeInstance(getMBeanName(objectName));
-                    } else if (name.isPattern() && mbean.getType() != null) {
+                    } else if (name.isPattern() && mbean.getType() == null) {
                         values.setType(getMBeanName(objectName));
                     } else {
                         values.setType(mbean.getType() != null ? mbean.getType() : getMBeanName(objectName));
@@ -201,7 +202,13 @@ public class Collector implements Runnable {
                     } else if (mbeanAttribute.getIndex() == null) {
                         values.setTypeInstance(mbeanAttribute.getName());
                     }
-                    items[index] = getAttrbituteMetrics(objectName, mbeanAttribute);
+                    final Values.ValueHolder holder = getAttrbituteMetrics(objectName, mbeanAttribute);
+                    valid &= holder != null;
+                    items[index] = holder;
+                }
+                
+                if (!valid) {
+                    continue;
                 }
 
                 values.getItems().addAll(Arrays.asList(items));
@@ -241,13 +248,8 @@ public class Collector implements Runnable {
         }
     }
 
-    private String getMBeanName(final ObjectName objectName) throws JMException {
-        try {
-            return (String) getConnection().getAttribute(objectName, "Name");
-        } catch (IOException ex) {
-            log.error("Failed to get name of " + objectName);
-            return null;
-        }
+    private String getMBeanName(final ObjectName objectName) {
+        return objectName.getKeyProperty("name");
     }
 
     private Object getAttribute(final ObjectName name, final String attribute, final boolean retry) throws JMException {
