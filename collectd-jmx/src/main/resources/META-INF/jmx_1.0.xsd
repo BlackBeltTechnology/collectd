@@ -64,9 +64,14 @@
                 <xs:documentation>Name or filter of the JMX MBean.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="alias" type="xs:string" use="required">
+        <xs:attribute name="type" type="xs:string" use="required">
             <xs:annotation>
-                <xs:documentation>User friendly name of the metrics (graph).</xs:documentation>
+                <xs:documentation>Type name, it must be added to Collectd types.db.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="typeInstance" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>Type instance name.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
@@ -85,14 +90,14 @@
                 <xs:documentation>MBean composite attribute key (only for composite attributes).</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="alias" type="xs:string" use="optional">
+        <xs:attribute name="typeInstance" type="xs:string" use="optional">
             <xs:annotation>
-                <xs:documentation>User friendly attribute name (data series).</xs:documentation>
+                <xs:documentation>Type instance name.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="units" type="xs:string" use="optional">
+        <xs:attribute name="index" type="xs:int" use="optional">
             <xs:annotation>
-                <xs:documentation>Unit of attribute data.</xs:documentation>
+                <xs:documentation>Index of attribute value in Collectd numeric values list.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="type" type="jmx:DataType" use="optional" default="GAUGE">

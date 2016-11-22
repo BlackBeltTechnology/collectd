@@ -6,6 +6,7 @@ import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -99,7 +100,7 @@ public class Collector implements Runnable {
             }
         }
     }
-    
+
     public void tearDown() {
         try {
             packetSender.flush();
@@ -166,26 +167,41 @@ public class Collector implements Runnable {
             if (mbean.getAttributes().isEmpty()) {
                 // TODO - get all attributes
             } else {
-                for (final MBeanAttributeType mbeanAttribute : mbean.getAttributes()) {
-                    final Values values = new Values();
-                    values.setHost(config.getClient());
-                    values.setPlugin(plugin);
-                    values.setPluginInstance(instance);
-                    values.setInterval(config.getInterval());
-                    if (name.isPattern()) {
-                        values.setType(mbean.getAlias() != null ? mbean.getAlias() + "-" + getMBeanName(objectName) : getMBeanName(objectName));
+                final Values values = new Values();
+                values.setHost(config.getClient());
+                values.setPlugin(plugin);
+                values.setPluginInstance(instance);
+                values.setInterval(config.getInterval());
+
+                final Values.ValueHolder[] items = new Values.ValueHolder[mbean.getAttributes().size()];
+
+                int index = 0;
+                for (final Iterator<MBeanAttributeType> it = mbean.getAttributes().iterator(); it.hasNext(); index++) {
+                    final MBeanAttributeType mbeanAttribute = it.next();
+
+                    if (name.isPattern() && mbean.getType() != null) {
+                        values.setType(mbean.getType());
+                        values.setTypeInstance(getMBeanName(objectName));
+                    } else if (name.isPattern() && mbean.getType() != null) {
+                        values.setType(getMBeanName(objectName));
                     } else {
-                        values.setType(mbean.getAlias() != null ? mbean.getAlias() : getMBeanName(objectName));
+                        values.setType(mbean.getType() != null ? mbean.getType() : getMBeanName(objectName));
                     }
 
-                    values.setTypeInstance(mbeanAttribute.getAlias() != null ? mbeanAttribute.getAlias() : mbeanAttribute.getName());
-                    final Values.ValueHolder holder = getAttrbituteMetrics(objectName, mbeanAttribute);
-                    if (holder != null) {
-                        values.getItems().add(holder);
+                    if (mbeanAttribute.getTypeInstance() != null) {
+                        values.setTypeInstance(mbeanAttribute.getTypeInstance());
+                    } else if (mbeanAttribute.getIndex() != null && mbean.getTypeInstance() != null) {
+                        values.setTypeInstance(mbean.getTypeInstance());
+                    } else if (mbeanAttribute.getIndex() == null && mbeanAttribute.getComposite() != null) {
+                        values.setTypeInstance(mbeanAttribute.getComposite());
+                    } else if (mbeanAttribute.getIndex() == null) {
+                        values.setTypeInstance(mbeanAttribute.getName());
                     }
-
-                    valueList.add(values);
+                    items[index] = getAttrbituteMetrics(objectName, mbeanAttribute);
                 }
+
+                values.getItems().addAll(Arrays.asList(items));
+                valueList.add(values);
             }
         }
 

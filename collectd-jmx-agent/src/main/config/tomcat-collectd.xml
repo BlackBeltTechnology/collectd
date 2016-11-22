@@ -3,11 +3,11 @@
      xmlns="http://jmx.collectd.org/xml/ns/definition" 
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
      xsi:schemaLocation="http://jmx.collectd.org/xml/ns/definition ../../../../collectd-jmx/src/main/resources/META-INF/jmx_1.0.xsd">
-    <mbeans name="tomcat">
-        <mbean name="Catalina:type=GlobalRequestProcessor,*" alias="GRP">
-            <attribute name="bytesReceived" alias="received" units="bytes" type="COUNTER"/>
-            <attribute name="bytesSent" alias="sent" units="bytes" type="COUNTER"/>
-            <attribute name="errorCount" alias="errors" type="COUNTER"/>
+    <mbeans name="jmx_tomcat">
+        <mbean name="Catalina:type=GlobalRequestProcessor,*" type="tomcat_requests">
+            <attribute name="bytesReceived" typeInstance="received" type="DERIVE"/>
+            <attribute name="bytesSent" typeInstance="sent" type="DERIVE"/>
+            <attribute name="errorCount" typeInstance="errors" type="DERIVE"/>
         </mbean>
     </mbeans>
 </jmx>

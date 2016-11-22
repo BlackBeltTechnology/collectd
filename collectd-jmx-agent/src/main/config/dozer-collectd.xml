@@ -3,18 +3,18 @@
      xmlns="http://jmx.collectd.org/xml/ns/definition" 
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
      xsi:schemaLocation="http://jmx.collectd.org/xml/ns/definition ../../../../collectd-jmx/src/main/resources/META-INF/jmx_1.0.xsd">
-    <mbeans name="dozer">
-        <mbean name="org.dozer.jmx:type=DozerStatisticsController" alias="Cache">
-            <attribute name="CacheHitCount" alias="cache hits"/>
-            <attribute name="CacheMissCount" alias="cache misses"/>
+    <mbeans name="jmx_dozer">
+        <mbean name="org.dozer.jmx:type=DozerStatisticsController" type="dozer_cache">
+            <attribute name="CacheHitCount" typeInstance="hits"/>
+            <attribute name="CacheMissCount" typeInstance="misses"/>
         </mbean>
-        <mbean name="org.dozer.jmx:type=DozerStatisticsController" alias="FieldMapping">
-            <attribute name="FieldMappingFailureCount" alias="field mapping failures"/>
-            <attribute name="FieldMappingSuccessCount" alias="field mapping success"/>
+        <mbean name="org.dozer.jmx:type=DozerStatisticsController" type="dozer_mapping" typeInstance="field_mapping">
+            <attribute name="FieldMappingFailureCount" typeInstance="failure"/>
+            <attribute name="FieldMappingSuccessCount" typeInstance="success"/>
         </mbean>
-        <mbean name="org.dozer.jmx:type=DozerStatisticsController" alias="Mapping">
-            <attribute name="MappingFailureCount" alias="mapping failures"/>
-            <attribute name="MappingSuccessCount" alias="mapping success"/>
+        <mbean name="org.dozer.jmx:type=DozerStatisticsController" type="dozer_mapping" typeInstance="object_mapping">
+            <attribute name="MappingFailureCount" typeInstance="failure"/>
+            <attribute name="MappingSuccessCount" typeInstance="success"/>
         </mbean>
     </mbeans>
 </jmx>

@@ -3,16 +3,16 @@
      xmlns="http://jmx.collectd.org/xml/ns/definition" 
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
      xsi:schemaLocation="http://jmx.collectd.org/xml/ns/definition ../../../../collectd-jmx/src/main/resources/META-INF/jmx_1.0.xsd">
-    <mbeans name="ehcache">
-        <mbean name="net.sf.ehcache:type=CacheStatistics,CacheManager=__DEFAULT__,*" alias="Objects">
-            <attribute name="ObjectCount" alias="objects"/>
-            <attribute name="DiskStoreObjectCount" alias="DiskStore objects"/>
-            <attribute name="MaxTotal" alias="max total"/>
-            <attribute name="WriterQueueLength" alias="queue length"/>
+    <mbeans name="jmx_ehcache">
+        <mbean name="net.sf.ehcache:type=CacheStatistics,CacheManager=__DEFAULT__,*" type="ehcache_objects">
+            <attribute name="ObjectCount" typeInstance="mem_objects" type="COUNTER"/>
+            <attribute name="DiskStoreObjectCount" typeInstance="disk_objects" type="COUNTER"/>
+            <attribute name="MaxTotal" typeInstance="max" type="GAUGE"/>
+            <attribute name="WriterQueueLength" typeInstance="queue" type="GAUGE"/>
         </mbean>
-        <mbean name="net.sf.ehcache:type=CacheStatistics,CacheManager=__DEFAULT__,*" alias="HitsAndMisses">
-            <attribute name="CacheHits" alias="cache hits"/>
-            <attribute name="CacheMisses" alias="cache misses"/>
+        <mbean name="net.sf.ehcache:type=CacheStatistics,CacheManager=__DEFAULT__,*" type="ehcache_stats">
+            <attribute name="CacheHits" typeInstance="hits" type="COUNTER"/>
+            <attribute name="CacheMisses" typeInstance="misses" type="COUNTER"/>
         </mbean>
     </mbeans>
 </jmx>

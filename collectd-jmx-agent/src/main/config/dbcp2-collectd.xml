@@ -3,13 +3,13 @@
      xmlns="http://jmx.collectd.org/xml/ns/definition" 
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
      xsi:schemaLocation="http://jmx.collectd.org/xml/ns/definition ../../../../collectd-jmx/src/main/resources/META-INF/jmx_1.0.xsd">
-    <mbeans name="dbcp2">
-        <mbean name="org.ops4j.pax.jdbc.pool.dbcp2:type=GenericObjectPool,*" alias="GenericObjectPool">
-            <attribute name="NumActive" alias="active"/>
-            <attribute name="NumIdle" alias="idle"/>
-            <attribute name="MaxTotal" alias="max total"/>
-            <attribute name="MaxIdle" alias="max idle"/>
-            <attribute name="NumWaiters" alias="waiters"/>
+    <mbeans name="jmx_dbcp2">
+        <mbean name="org.ops4j.pax.jdbc.pool.dbcp2:type=GenericObjectPool,*" type="dbcp2_pool">
+            <attribute name="NumActive" typeInstance="active"/>
+            <attribute name="NumIdle" typeInstance="idle"/>
+            <attribute name="MaxTotal" typeInstance="max_total"/>
+            <attribute name="MaxIdle" typeInstance="max_idle"/>
+            <attribute name="NumWaiters" typeInstance="waiters"/>
         </mbean>
     </mbeans>
 </jmx>
