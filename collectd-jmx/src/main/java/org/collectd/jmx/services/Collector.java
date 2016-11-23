@@ -10,6 +10,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import javax.management.AttributeNotFoundException;
+import javax.management.InstanceNotFoundException;
 import javax.management.JMException;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
@@ -132,6 +134,10 @@ public class Collector implements Runnable {
                 for (final MBeanType mbean : mbeans.getMbeen()) {
                     try {
                         data.addAll(getMetrics(plugin, mbean, true));
+                    } catch (InstanceNotFoundException ex) {
+                        if (log.isDebugEnabled()) {
+                            log.debug("MBean not found" + mbean.getName(), ex);
+                        }
                     } catch (JMException ex) {
                         log.error("Unable to get metrics for " + mbean.getName(), ex);
                     }
@@ -169,7 +175,7 @@ public class Collector implements Runnable {
 
         for (final ObjectName objectName : objectNames) {
             if (mbean.getAttributes().isEmpty()) {
-                // TODO - get all attributes
+                // TODO - get all numeric attributes
             } else {
                 final Values values = new Values();
                 values.setHost(config.getClient());
@@ -180,35 +186,39 @@ public class Collector implements Runnable {
                 final Values.ValueHolder[] items = new Values.ValueHolder[mbean.getAttributes().size()];
 
                 int index = 0;
-                boolean valid = true;
                 for (final Iterator<MBeanAttributeType> it = mbean.getAttributes().iterator(); it.hasNext(); index++) {
                     final MBeanAttributeType mbeanAttribute = it.next();
 
-                    if (name.isPattern() && mbean.getType() != null) {
-                        values.setType(mbean.getType());
-                        values.setTypeInstance(getMBeanName(objectName));
-                    } else if (name.isPattern() && mbean.getType() == null) {
-                        values.setType(getMBeanName(objectName));
-                    } else {
-                        values.setType(mbean.getType() != null ? mbean.getType() : getMBeanName(objectName));
-                    }
+                    values.setType(mbean.getType());
 
-                    if (mbeanAttribute.getTypeInstance() != null) {
+                    if (name.isPattern()) {
+                        // MBean is a search pattern
+                        final String mbeanInstanceName = getMBeanName(objectName);
+
+                        values.setTypeInstance(mbean.getTypeInstance() != null ? mbean.getTypeInstance() + "-" + mbeanInstanceName : mbeanInstanceName);
+                    } else if (mbeanAttribute.getTypeInstance() != null) {
+                        // type instance is specified (for MBean attribute)
                         values.setTypeInstance(mbeanAttribute.getTypeInstance());
-                    } else if (mbeanAttribute.getIndex() != null && mbean.getTypeInstance() != null) {
+                    } else if (mbean.getTypeInstance() != null) {
+                        // type instance is specified (for MBean)
                         values.setTypeInstance(mbean.getTypeInstance());
                     } else if (mbeanAttribute.getIndex() == null && mbeanAttribute.getComposite() != null) {
+                        // not an indexed type (in TypesDB) but composite
                         values.setTypeInstance(mbeanAttribute.getComposite());
-                    } else if (mbeanAttribute.getIndex() == null) {
+                    } else {
+                        // attribute name otherwise
                         values.setTypeInstance(mbeanAttribute.getName());
                     }
-                    final Values.ValueHolder holder = getAttrbituteMetrics(objectName, mbeanAttribute);
-                    valid &= holder != null;
-                    items[index] = holder;
-                }
-                
-                if (!valid) {
-                    continue;
+
+                    Values.ValueHolder holder = null;
+                    try {
+                        holder = getAttrbituteMetrics(objectName, mbeanAttribute);
+                    } catch (AttributeNotFoundException ex) {
+                        log.warn("Unable to get attribute", ex);
+                    }
+
+                    // set numeric value 0 if attribute not found or failed to get value
+                    items[index] = holder != null ? holder : new Values.ValueHolder(ValueType.valueOf(mbeanAttribute.getType().value()), 0);
                 }
 
                 values.getItems().addAll(Arrays.asList(items));

@@ -5,14 +5,17 @@
      xsi:schemaLocation="http://jmx.collectd.org/xml/ns/definition ../../../../collectd-jmx/src/main/resources/META-INF/jmx_1.0.xsd">
     <mbeans name="jmx_ehcache">
         <mbean name="net.sf.ehcache:type=CacheStatistics,CacheManager=__DEFAULT__,*" type="ehcache_objects">
-            <attribute name="ObjectCount" index="0" type="COUNTER"/>
-            <attribute name="DiskStoreObjectCount" index="1" type="COUNTER"/>
-            <attribute name="MaxTotal" index="2" type="GAUGE"/>
-            <attribute name="WriterQueueLength" index="3" type="GAUGE"/>
+            <attribute name="ObjectCount" index="0" type="GAUGE"/>
+            <attribute name="DiskStoreObjectCount" index="1" type="GAUGE"/>
+            <attribute name="WriterQueueLength" index="2" type="GAUGE"/>
         </mbean>
         <mbean name="net.sf.ehcache:type=CacheStatistics,CacheManager=__DEFAULT__,*" type="ehcache_stats">
-            <attribute name="CacheHits" index="0" type="COUNTER"/>
-            <attribute name="CacheMisses" index="1" type="COUNTER"/>
+            <attribute name="CacheHits" index="0" type="GAUGE"/>
+            <attribute name="CacheMisses" index="1" type="GAUGE"/>
+            <attribute name="InMemoryHits" index="2" type="GAUGE"/>
+            <attribute name="InMemoryMisses" index="3" type="GAUGE"/>
+            <attribute name="OnDiskHits" index="4" type="GAUGE"/>
+            <attribute name="OnDiskMisses" index="5" type="GAUGE"/>
         </mbean>
     </mbeans>
 </jmx>

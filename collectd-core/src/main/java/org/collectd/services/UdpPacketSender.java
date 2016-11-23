@@ -157,11 +157,15 @@ public class UdpPacketSender {
             log.trace("Buffer data: " + Arrays.toString(buffer));
         }
 
-        final DatagramPacket packet = new DatagramPacket(buffer, length, server);
-        if (server.getAddress().isMulticastAddress()) {
-            getMulticastSocket().send(packet);
-        } else {
-            getSocket().send(packet);
+        try {
+            final DatagramPacket packet = new DatagramPacket(buffer, length, server);
+            if (server.getAddress().isMulticastAddress()) {
+                getMulticastSocket().send(packet);
+            } else {
+                getSocket().send(packet);
+            }
+        } catch (IllegalArgumentException ex) {
+            log.debug("Unable to send metrics", ex);
         }
     }
 }
