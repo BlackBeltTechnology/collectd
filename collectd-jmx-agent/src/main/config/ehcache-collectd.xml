@@ -16,6 +16,8 @@
             <attribute name="InMemoryMisses" index="3" type="GAUGE"/>
             <attribute name="OnDiskHits" index="4" type="GAUGE"/>
             <attribute name="OnDiskMisses" index="5" type="GAUGE"/>
+            <attribute name="OffHeapHits" index="6" type="GAUGE"/>
+            <attribute name="OffHeapMisses" index="7" type="GAUGE"/>
         </mbean>
     </mbeans>
 </jmx>
