@@ -13,6 +13,8 @@ import java.util.Objects;
 import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;
 import javax.management.JMException;
+import javax.management.MBeanAttributeInfo;
+import javax.management.MBeanInfo;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import javax.management.openmbean.CompositeData;
@@ -45,6 +47,12 @@ public class Collector implements Runnable {
 
     private static final String RUNTIME_NAME = "java.lang:type=Runtime";
 
+    /**
+     * Create new collector instance.
+     *
+     * @param config configuration
+     * @param jmxList JMX definitions
+     */
     public Collector(final Controller.Config config, final Collection<Jmx> jmxList) {
         Objects.requireNonNull(config, "Missing configuration");
         Objects.requireNonNull(jmxList, "Missing JMX configuration");
@@ -91,6 +99,7 @@ public class Collector implements Runnable {
     }
 
     @Override
+    @SuppressWarnings("PMD.AvoidCatchingGenericException")
     public void run() {
         try {
             final Collection<Values> data = collectData();
@@ -107,7 +116,10 @@ public class Collector implements Runnable {
         }
     }
 
-    public void tearDown() {
+    /**
+     * Shutdown controller. Shutdown process flushes Collectd packet sender.
+     */
+    public void shutdown() {
         try {
             packetSender.flush();
         } catch (IOException ex) {
@@ -148,9 +160,8 @@ public class Collector implements Runnable {
         return data;
     }
 
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     private Collection<Values> getMetrics(final String plugin, final MBeanType mbean, final boolean retry) throws JMException {
-        final Collection<Values> valueList = new LinkedList<>();
-
         final ObjectName name = new ObjectName(mbean.getName());
         if (log.isTraceEnabled()) {
             log.trace("  - reading MBean: " + name);
@@ -173,9 +184,40 @@ public class Collector implements Runnable {
             objectNames = Arrays.asList(name);
         }
 
+        final Collection<Values> valueList = new LinkedList<>();
         for (final ObjectName objectName : objectNames) {
             if (mbean.getAttributes().isEmpty()) {
-                // TODO - get all numeric attributes
+                // get all numeric attributes (including composite attributes) as GAUGE
+                try {
+                    final MBeanInfo info = getConnection().getMBeanInfo(objectName);
+                    for (final MBeanAttributeInfo attribute : info.getAttributes()) {
+                        if (!attribute.isReadable()) {
+                            // attribute is not readable
+                            continue;
+                        }
+
+                        final String attrName = attribute.getName();
+                        try {
+                            final Object attr = getAttribute(objectName, attrName, true);
+
+                            if (attr instanceof CompositeData) {
+                                final CompositeData data = (CompositeData) attr;
+                                for (final String key : data.getCompositeType().keySet()) {
+                                    final Object value = data.get(key);
+                                    if (value instanceof Number) {
+                                        addNumericValue(valueList, plugin, mbean.getType(), attrName + "_" + key, (Number) value);
+                                    }
+                                }
+                            } else if (attr instanceof Number) {
+                                addNumericValue(valueList, plugin, mbean.getType(), attrName, (Number) attr);
+                            }
+                        } catch (AttributeNotFoundException ex) {
+                            log.warn("Unable to get attribute", ex);
+                        }
+                    }
+                } catch (IOException ex) {
+                    log.error("Unable to get MBean info", ex);
+                }
             } else {
                 final Values values = new Values();
                 values.setHost(config.getClient());
@@ -227,6 +269,19 @@ public class Collector implements Runnable {
         }
 
         return valueList;
+    }
+
+    private void addNumericValue(final Collection<Values> valueList, final String plugin, final String type, final String typeInstance, final Number value) {
+        final Values values = new Values();
+        values.setHost(config.getClient());
+        values.setPlugin(plugin);
+        values.setPluginInstance(instance);
+        values.setInterval(config.getInterval());
+        values.setType(type);
+        values.setTypeInstance(typeInstance);
+        values.getItems().add(new Values.ValueHolder(ValueType.GAUGE, value));
+
+        valueList.add(values);
     }
 
     private Values.ValueHolder getAttrbituteMetrics(final ObjectName objectName, final MBeanAttributeType mbeanAttribute) throws JMException {
