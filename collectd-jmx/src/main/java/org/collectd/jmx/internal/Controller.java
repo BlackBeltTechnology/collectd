@@ -14,6 +14,9 @@ import org.collectd.jmx.services.Collector;
 import org.collectd.jmx.services.ConfigurationLoader;
 import org.collectd.jmx.xml.ns.definition.Jmx;
 
+/**
+ * Controller for Collectd data sender of JMX metrics.
+ */
 @Slf4j
 public class Controller {
 
@@ -21,14 +24,16 @@ public class Controller {
     public static final long DEFAULT_SCHEDULER_INTERVAL = 1000L;
 
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1, new CollectorThreadFactory());
-    
+
     private final Collector collector;
 
+    /**
+     * Create new JMX controller.
+     *
+     * @param configFiles JMX definitions
+     */
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     public Controller(final Collection<String> configFiles) {
-        this(configFiles, DEFAULT_SCHEDULER_INTERVAL);
-    }
-
-    public Controller(final Collection<String> configFiles, final long interval) {
         Objects.requireNonNull(configFiles, "No JMX configuration file is specified");
         if (log.isDebugEnabled()) {
             log.debug("JMX collector configuration files: " + configFiles);
@@ -39,22 +44,22 @@ public class Controller {
         for (final String configFile : configFiles) {
             configs.add(configLoader.loadValidators(new File(configFile.trim())));
         }
-        
+
         final Config config = Config.initFromCommandLine();
 
         collector = new Collector(config, configs);
         scheduler.scheduleAtFixedRate(collector, 0, config.getInterval(), TimeUnit.MILLISECONDS);
     }
-    
+
     public void shutdown() {
         scheduler.shutdownNow();
-        collector.tearDown();
+        collector.shutdown();
     }
 
     private static class CollectorThreadFactory implements ThreadFactory {
 
         @Override
-        public Thread newThread(Runnable task) {
+        public Thread newThread(final Runnable task) {
             final Thread thread = new Thread(task);
             thread.setName(COLLECTOR_THREAD_NAME);
             thread.setDaemon(true);
@@ -67,28 +72,28 @@ public class Controller {
 
         public static final String HOST_ARGUMENT = "collectd.host";
         private String host = CollectdConstants.DEFAULT_IPV4_ADDRESS;
-        
+
         public static final String PORT_ARGUMENT = "collectd.port";
         private int port = CollectdConstants.DEFAULT_UDP_PORT;
-        
+
         public static final String PACKET_SIZE_ARGUMENT = "collectd.packetSize";
         private int packetSize = CollectdConstants.DEFAULT_PACKET_SIZE;
 
         public static final String INTERVAL_ARGUMENT = "collectd.interval";
         private long interval = DEFAULT_SCHEDULER_INTERVAL;
-        
+
         public static final String INSTANCE_ARGUMENT = "collectd.instance";
         private String instance;
-        
+
         public static final String JMX_URL_ARGUMENT = "collectd.jmxUrl";
         private String jmxUrl;
-        
+
         public static final String CLIENT_ARGUMENT = "collectd.client";
         private String client;
-        
+
         static Config initFromCommandLine() {
             final Config config = new Config();
-            
+
             config.setHost(System.getProperty(HOST_ARGUMENT));
             config.setPort(System.getProperty(PORT_ARGUMENT));
             config.setPacketSize(System.getProperty(PACKET_SIZE_ARGUMENT));
@@ -96,7 +101,7 @@ public class Controller {
             config.setInstance(System.getProperty(INSTANCE_ARGUMENT));
             config.setJmxUrl(System.getProperty(JMX_URL_ARGUMENT));
             config.setClient(System.getProperty(CLIENT_ARGUMENT));
-            
+
             return config;
         }
 
@@ -128,13 +133,13 @@ public class Controller {
             this.instance = instance;
         }
 
-        public void setJmxUrl(final String jmxUrl) {
+        void setJmxUrl(final String jmxUrl) {
             if (jmxUrl != null) {
                 this.jmxUrl = jmxUrl;
             }
         }
 
-        public void setClient(final String client) {
+        void setClient(final String client) {
             if (client != null) {
                 this.client = client;
             }

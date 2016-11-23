@@ -91,16 +91,61 @@ public class UdpPacketSender {
         writer.writeNotificationPart(notification);
     }
 
-    public void flush() throws IOException {
-        flush(writer.getBuffer());
-    }
-
+    /**
+     * Get number of bytes sent to Collectd server.
+     * 
+     * @return number of sent bytes
+     */
     public long getBytesSent() {
         return bytesSent.longValue();
     }
 
+    /**
+     * Get number of packets sent to Collectd server.
+     * 
+     * @return number of sent packets
+     */
     public int getPacketsSent() {
         return packetsSent.intValue();
+    }
+
+    /**
+     * Flush buffer.
+     * 
+     * @throws IOException unable to write buffer
+     */
+    public void flush() throws IOException {
+        flush(writer.getBuffer());
+    }
+
+    private void flush(final byte[] buffer) throws IOException {
+        final int length = buffer != null ? buffer.length : 0;
+        if (length == 0) {
+            return;
+        }
+
+        bytesSent.addAndGet(length);
+        packetsSent.incrementAndGet();
+
+        if (log.isDebugEnabled()) {
+            log.debug("Sending UDP packet, buffer length: " + length);
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("Destination host: " + server.getHostString());
+            log.trace("Destination port: " + server.getPort());
+            log.trace("Buffer data: " + Arrays.toString(buffer));
+        }
+
+        try {
+            final DatagramPacket packet = new DatagramPacket(buffer, length, server);
+            if (server.getAddress().isMulticastAddress()) {
+                getMulticastSocket().send(packet);
+            } else {
+                getSocket().send(packet);
+            }
+        } catch (IllegalArgumentException ex) {
+            log.debug("Unable to send metrics", ex);
+        }
     }
 
     private String getClient() {
@@ -137,35 +182,5 @@ public class UdpPacketSender {
             mcast.setTimeToLive(1);
         }
         return mcast;
-    }
-
-    private void flush(final byte[] buffer) throws IOException {
-        final int length = buffer != null ? buffer.length : 0;
-        if (length == 0) {
-            return;
-        }
-
-        bytesSent.addAndGet(length);
-        packetsSent.incrementAndGet();
-
-        if (log.isDebugEnabled()) {
-            log.debug("Sending UDP packet, buffer length: " + length);
-        }
-        if (log.isTraceEnabled()) {
-            log.trace("Destination host: " + server.getHostString());
-            log.trace("Destination port: " + server.getPort());
-            log.trace("Buffer data: " + Arrays.toString(buffer));
-        }
-
-        try {
-            final DatagramPacket packet = new DatagramPacket(buffer, length, server);
-            if (server.getAddress().isMulticastAddress()) {
-                getMulticastSocket().send(packet);
-            } else {
-                getSocket().send(packet);
-            }
-        } catch (IllegalArgumentException ex) {
-            log.debug("Unable to send metrics", ex);
-        }
     }
 }

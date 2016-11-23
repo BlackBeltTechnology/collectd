@@ -64,6 +64,14 @@ public class UdpBufferWriter {
         return buffer;
     }
 
+    /**
+     * Check if free buffer space is enough for numeric values.
+     * 
+     * @param values numeric values
+     * @return buffer to send if flushed, null otherwise
+     * @throws IOException unable to check buffer size or flush buffer
+     */
+    @SuppressFBWarnings("PZLA_PREFER_ZERO_LENGTH_ARRAYS")
     public byte[] checkSpace(final Values values) throws IOException {
         final int length = getKeyPartsLength(values) + getValuesPartLength(values);
         if (length > packetSize) {
@@ -77,6 +85,14 @@ public class UdpBufferWriter {
         }
     }
 
+    /**
+     * Check if free buffer space is enough for notification.
+     * 
+     * @param notification notification
+     * @return buffer to send if flushed, null otherwise
+     * @throws IOException unable to check buffer size or flush buffer
+     */
+    @SuppressFBWarnings("PZLA_PREFER_ZERO_LENGTH_ARRAYS")
     public byte[] checkSpace(final Notification notification) throws IOException {
         final int length = getKeyPartsLength(notification) + getNotificationPartLength(notification);
         if (length > packetSize) {
@@ -123,7 +139,6 @@ public class UdpBufferWriter {
      * Write numeric values to buffer.
      *
      * @param values numeric values
-     * @param interval interval
      * @throws IOException unable to write value to output stream
      */
     @SuppressFBWarnings("DB_DUPLICATE_SWITCH_CLAUSES")
@@ -198,8 +213,7 @@ public class UdpBufferWriter {
     /**
      * Write notification to buffer.
      *
-     * @param severity severity
-     * @param message message
+     * @param notification notification
      * @throws IOException unable to write value to output stream
      */
     public void writeNotificationPart(final Notification notification) throws IOException {
@@ -258,6 +272,7 @@ public class UdpBufferWriter {
         writeStringValue(val, true);
     }
 
+    @SuppressWarnings("PMD.UnusedFormalParameter")
     private int getNumberPartLength(final long val) {
         return HEADER_LEN + UINT64_LEN;
     }
