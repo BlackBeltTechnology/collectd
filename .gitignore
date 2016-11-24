@@ -13,3 +13,4 @@ hs_err_pid*
 
 # Maven target directory
 **/target/
+nb*.xml
