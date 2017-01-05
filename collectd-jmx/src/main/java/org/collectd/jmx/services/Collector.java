@@ -130,7 +130,6 @@ public class Collector implements Runnable {
     /**
      * Collect metrics and return data in Collectd structure.
      *
-     * @param jmx JMX configuration
      * @return metrics data
      */
     private Collection<Values> collectData() {
