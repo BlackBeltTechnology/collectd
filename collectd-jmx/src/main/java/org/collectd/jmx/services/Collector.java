@@ -196,6 +196,9 @@ public class Collector implements Runnable {
                             continue;
                         }
 
+                        // MBean is a search pattern
+                        final String mbeanInstanceName = name.isPattern() ? getMBeanName(objectName) : mbean.getName();
+
                         final String attrName = attribute.getName();
                         try {
                             final Object attr = getAttribute(objectName, attrName, true);
@@ -205,11 +208,11 @@ public class Collector implements Runnable {
                                 for (final String key : data.getCompositeType().keySet()) {
                                     final Object value = data.get(key);
                                     if (value instanceof Number) {
-                                        addNumericValue(valueList, plugin, mbean.getType(), attrName + "_" + key, (Number) value);
+                                        addNumericValue(valueList, plugin, mbean.getType(), mbeanInstanceName + "_" + attrName + "_" + key, (Number) value);
                                     }
                                 }
                             } else if (attr instanceof Number) {
-                                addNumericValue(valueList, plugin, mbean.getType(), attrName, (Number) attr);
+                                addNumericValue(valueList, plugin, mbean.getType(), mbeanInstanceName + "_" + attrName, (Number) attr);
                             }
                         } catch (AttributeNotFoundException ex) {
                             log.warn("Unable to get attribute", ex);
@@ -259,8 +262,9 @@ public class Collector implements Runnable {
                         log.warn("Unable to get attribute", ex);
                     }
 
+                    final int itemIdx = mbeanAttribute.getIndex() != null ? mbeanAttribute.getIndex() : index;
                     // set numeric value 0 if attribute not found or failed to get value
-                    items[index] = holder != null ? holder : new Values.ValueHolder(ValueType.valueOf(mbeanAttribute.getType().value()), 0);
+                    items[itemIdx] = holder != null ? holder : new Values.ValueHolder(ValueType.valueOf(mbeanAttribute.getType().value()), 0);
                 }
 
                 values.getItems().addAll(Arrays.asList(items));
