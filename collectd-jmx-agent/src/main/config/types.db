@@ -1,0 +1,15 @@
+jmx_memory              memory_init:GAUGE:0:U, memory_committed:GAUGE:0:U, memory_used:GAUGE:0:U, memory_max:GAUGE:-1:U
+jmx_memory_pool         memory_init:GAUGE:0:U, memory_committed:GAUGE:0:U, memory_used:GAUGE:0:U, memory_max:GAUGE:-1:U
+jmx_threading           threads_all:GAUGE:0:U, threads_daemon:GAUGE:0:U
+jmx_classloading        classes_current:GAUGE:0:U, classes_total_loaded:COUNTER:0:U, classes_unloaded:COUNTER:0:U
+jmx_gc                  gc_count:COUNTER:0:U, gc_time:DERIVE:0:U
+
+tomcat_requests         received:DERIVE:0:U, sent:DERIVE:0:U, errors:DERIVE:0:U
+
+ehcache_objects         mem_objects:COUNTER:0:U, disk_objects:COUNTER:0:U, queue:COUNTER:0:U
+ehcache_stats           hits:COUNTER:0:U, misses:COUNTER:0:U, mem_hits:GAUGE:0:U, mem_misses:GAUGE:0:U, disk_hits:GAUGE:0:U, disk_misses:GAUGE:0:U, off_heap_hits:GAUGE:0:U, off_heap_misses:GAUGE:0:U
+
+dbcp2_pool              active:GAUGE:0:U, idle:GAUGE:0:U, max_total:GAUGE:0:U, max_idle:GAUGE:0:U, waiters:GAUGE:0:U
+
+dozer_mapping           success:GAUGE:0:U, failure:GAUGE:0:U
+dozer_cache             hits:GAUGE:0:U, misses:GAUGE:0:U
