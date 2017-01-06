@@ -5,11 +5,11 @@
      xsi:schemaLocation="http://jmx.collectd.org/xml/ns/definition ../../../../collectd-jmx/src/main/resources/META-INF/jmx_1.0.xsd">
     <mbeans name="jmx_dbcp2">
         <mbean name="org.ops4j.pax.jdbc.pool.dbcp2:type=GenericObjectPool,*" type="dbcp2_pool">
-            <attribute name="NumActive" index="0"/>
-            <attribute name="NumIdle" index="1"/>
-            <attribute name="MaxTotal" index="2"/>
-            <attribute name="MaxIdle" index="3"/>
-            <attribute name="NumWaiters" index="4"/>
+            <attribute name="NumActive"/>
+            <attribute name="NumIdle"/>
+            <attribute name="MaxTotal"/>
+            <attribute name="MaxIdle"/>
+            <attribute name="NumWaiters"/>
         </mbean>
     </mbeans>
 </jmx>

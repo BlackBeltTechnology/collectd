@@ -246,8 +246,8 @@ public class Collector implements Runnable {
                     } else if (mbean.getTypeInstance() != null) {
                         // type instance is specified (for MBean)
                         values.setTypeInstance(mbean.getTypeInstance());
-                    } else if (mbeanAttribute.getIndex() == null && mbeanAttribute.getComposite() != null) {
-                        // not an indexed type (in TypesDB) but composite
+                    } else if (mbeanAttribute.getComposite() != null) {
+                        // composite and no type instance is specified
                         values.setTypeInstance(mbeanAttribute.getComposite());
                     } else {
                         // attribute name otherwise
@@ -261,9 +261,8 @@ public class Collector implements Runnable {
                         log.warn("Unable to get attribute", ex);
                     }
 
-                    final int itemIdx = mbeanAttribute.getIndex() != null ? mbeanAttribute.getIndex() : index;
                     // set numeric value 0 if attribute not found or failed to get value
-                    items[itemIdx] = holder != null ? holder : new Values.ValueHolder(ValueType.valueOf(mbeanAttribute.getType().value()), 0);
+                    items[index] = holder != null ? holder : new Values.ValueHolder(ValueType.valueOf(mbeanAttribute.getType().value()), 0);
                 }
 
                 values.getItems().addAll(Arrays.asList(items));

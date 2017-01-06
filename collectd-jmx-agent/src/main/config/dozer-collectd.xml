@@ -5,16 +5,16 @@
      xsi:schemaLocation="http://jmx.collectd.org/xml/ns/definition ../../../../collectd-jmx/src/main/resources/META-INF/jmx_1.0.xsd">
     <mbeans name="jmx_dozer">
         <!--mbean name="org.dozer.jmx:type=DozerStatisticsController" type="dozer_cache">
-            <attribute name="CacheHitCount" index="0"/>
-            <attribute name="CacheMissCount" index="1"/>
+            <attribute name="CacheHitCount"/>
+            <attribute name="CacheMissCount"/>
         </mbean-->
         <mbean name="org.dozer.jmx:type=DozerStatisticsController" type="dozer_mapping" typeInstance="field_mapping">
-            <attribute name="FieldMappingSuccessCount" index="0"/>
-            <attribute name="FieldMappingFailureCount" index="1"/>
+            <attribute name="FieldMappingSuccessCount"/>
+            <attribute name="FieldMappingFailureCount"/>
         </mbean>
         <mbean name="org.dozer.jmx:type=DozerStatisticsController" type="dozer_mapping" typeInstance="object_mapping">
-            <attribute name="MappingSuccessCount" index="0"/>
-            <attribute name="MappingFailureCount" index="1"/>
+            <attribute name="MappingSuccessCount"/>
+            <attribute name="MappingFailureCount"/>
         </mbean>
     </mbeans>
 </jmx>

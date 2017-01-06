@@ -4,10 +4,10 @@
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
      xsi:schemaLocation="http://jmx.collectd.org/xml/ns/definition ../../../../collectd-jmx/src/main/resources/META-INF/jmx_1.0.xsd">
     <mbeans name="jmx_tomcat">
-        <mbean name="Catalina:type=GlobalRequestProcessor,*" type="tomcat_requests">
-            <attribute name="bytesReceived" index="0" type="DERIVE"/>
-            <attribute name="bytesSent" index="1" type="DERIVE"/>
-            <attribute name="errorCount" index="2" type="DERIVE"/>
+        <mbean name="Catalina:type=GlobalRequestProcessor,*" type="tomcat_requests" >
+            <attribute name="bytesReceived" type="DERIVE"/>
+            <attribute name="bytesSent" type="DERIVE"/>
+            <attribute name="errorCount" type="DERIVE"/>
         </mbean>
     </mbeans>
 </jmx>

@@ -95,11 +95,6 @@
                 <xs:documentation>Type instance name.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="index" type="xs:int" use="optional">
-            <xs:annotation>
-                <xs:documentation>Index of attribute value in Collectd numeric values list.</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
         <xs:attribute name="type" type="jmx:DataType" use="optional" default="GAUGE">
             <xs:annotation>
                 <xs:documentation>Attribute data type.</xs:documentation>
