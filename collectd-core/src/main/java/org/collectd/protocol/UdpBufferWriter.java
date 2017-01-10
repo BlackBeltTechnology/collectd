@@ -51,8 +51,6 @@ public class UdpBufferWriter {
 
     /**
      * Get buffer content as byte array and reset it.
-     *
-     * @throws IOException unable to write value to output stream
      */
     public synchronized byte[] getBuffer() {
         final byte[] buffer;
