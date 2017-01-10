@@ -1,0 +1,72 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>hu.blackbelt</groupId>
+        <artifactId>collectd</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>collectd-feature</artifactId>
+    <packaging>pom</packaging>
+
+    <name>Collectd Karaf feature</name>
+    <description>Apache Karaf feature for Collectd.</description>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/features</directory>
+                <includes>
+                    <include>**/*.xml</include>
+                </includes>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>1.12</version>
+                <executions>
+                    <execution>
+                        <id>attach-artifacts</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>attach-artifact</goal>
+                        </goals>
+                        <configuration>
+                            <artifacts>
+                                <artifact>
+                                    <file>target/classes/fuse62-features.xml</file>
+                                    <type>xml</type>
+                                    <classifier>fuse62-features</classifier>
+                                </artifact>
+                                <artifact>
+                                    <file>target/classes/karaf4-features.xml</file>
+                                    <type>xml</type>
+                                    <classifier>karaf4-features</classifier>
+                                </artifact>
+                            </artifacts>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.0.1</version>
+                <executions>
+                    <execution>
+                        <id>filter</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>resources</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmx version="1.0"
+     xmlns="http://jmx.collectd.org/xml/ns/definition" 
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+     xsi:schemaLocation="http://jmx.collectd.org/xml/ns/definition ../../../../collectd-jmx/src/main/resources/META-INF/jmx_1.0.xsd">
+    <mbeans name="jmx_dbcp2">
+        <mbean name="org.ops4j.pax.jdbc.pool.dbcp2:type=GenericObjectPool,*" type="dbcp2_pool">
+            <attribute name="NumActive"/>
+            <attribute name="NumIdle"/>
+            <attribute name="MaxTotal"/>
+            <attribute name="MaxIdle"/>
+            <attribute name="NumWaiters"/>
+        </mbean>
+    </mbeans>
+</jmx>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmx version="1.0"
+     xmlns="http://jmx.collectd.org/xml/ns/definition" 
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+     xsi:schemaLocation="http://jmx.collectd.org/xml/ns/definition ../../../../collectd-jmx/src/main/resources/META-INF/jmx_1.0.xsd">
+    <mbeans name="jmx_java">
+        <mbean name="java.lang:type=Memory" type="jmx_memory" typeInstance="heap">
+            <attribute name="HeapMemoryUsage" composite="init"/>
+            <attribute name="HeapMemoryUsage" composite="committed"/>
+            <attribute name="HeapMemoryUsage" composite="used"/>
+            <attribute name="HeapMemoryUsage" composite="max"/>
+        </mbean>
+        <mbean name="java.lang:type=Memory" type="jmx_memory" typeInstance="non_heap">
+            <attribute name="NonHeapMemoryUsage" composite="init"/>
+            <attribute name="NonHeapMemoryUsage" composite="committed"/>
+            <attribute name="NonHeapMemoryUsage" composite="used"/>
+            <attribute name="NonHeapMemoryUsage" composite="max"/>
+        </mbean>
+        
+        <mbean name="java.lang:type=MemoryPool,*" type="jmx_memory_pool">
+            <attribute name="Usage" composite="init"/>
+            <attribute name="Usage" composite="committed"/>
+            <attribute name="Usage" composite="used"/>
+            <attribute name="Usage" composite="max"/>
+        </mbean>
+
+        <mbean name="java.lang:type=Threading" type="jmx_threading" typeInstance="threads">
+            <attribute name="ThreadCount"/>
+            <attribute name="DaemonThreadCount"/>
+        </mbean>
+
+        <mbean name="java.lang:type=ClassLoading" type="jmx_classloading" typeInstance="classes">
+            <attribute name="LoadedClassCount"/>
+            <attribute name="TotalLoadedClassCount" type="COUNTER"/>
+            <attribute name="UnloadedClassCount" type="COUNTER"/>
+        </mbean>
+
+        <mbean name="java.lang:type=Compilation" type="total_time_in_ms">
+            <attribute name="TotalCompilationTime" typeInstance="total_compilation_time" type="DERIVE"/>
+        </mbean>
+
+        <mbean name="java.lang:type=GarbageCollector,*" type="jmx_gc">
+            <attribute name="CollectionCount" type="COUNTER"/>
+            <attribute name="CollectionTime" type="DERIVE"/>
+        </mbean>
+    </mbeans>
+</jmx>

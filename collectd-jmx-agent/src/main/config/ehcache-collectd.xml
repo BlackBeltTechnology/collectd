@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmx version="1.0"
+     xmlns="http://jmx.collectd.org/xml/ns/definition" 
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+     xsi:schemaLocation="http://jmx.collectd.org/xml/ns/definition ../../../../collectd-jmx/src/main/resources/META-INF/jmx_1.0.xsd">
+    <mbeans name="jmx_ehcache">
+        <mbean name="net.sf.ehcache:type=CacheStatistics,CacheManager=__DEFAULT__,*" type="ehcache_objects">
+            <attribute name="ObjectCount" type="GAUGE"/>
+            <attribute name="DiskStoreObjectCount" type="GAUGE"/>
+            <attribute name="WriterQueueLength" type="GAUGE"/>
+        </mbean>
+        <mbean name="net.sf.ehcache:type=CacheStatistics,CacheManager=__DEFAULT__,*" type="ehcache_stats">
+            <attribute name="CacheHits" type="GAUGE"/>
+            <attribute name="CacheMisses" type="GAUGE"/>
+            <attribute name="InMemoryHits" type="GAUGE"/>
+            <attribute name="InMemoryMisses" type="GAUGE"/>
+            <attribute name="OnDiskHits" type="GAUGE"/>
+            <attribute name="OnDiskMisses" type="GAUGE"/>
+            <attribute name="OffHeapHits" type="GAUGE"/>
+            <attribute name="OffHeapMisses" type="GAUGE"/>
+        </mbean>
+    </mbeans>
+</jmx>

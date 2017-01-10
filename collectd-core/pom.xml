@@ -1,0 +1,33 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>hu.blackbelt</groupId>
+        <artifactId>collectd</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>collectd-core</artifactId>
+    <packaging>bundle</packaging>
+
+    <name>Collectd core module</name>
+    <description>OSGi module sending metrics to Collectd.</description>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <configuration>
+                    <instructions>
+                        <Export-Package>
+                            org.collectd.config;version="${project.version}",
+                            org.collectd.model;version="${project.version}",
+                            org.collectd.services;version="${project.version}"
+                        </Export-Package>
+                    </instructions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

@@ -13,3 +13,10 @@ hs_err_pid*
 
 # Maven target directory
 **/target/
+
+# Netbeans files
+nb*.xml
+
+# IntelliJ IDEA files
+.idea
+**/*.iml
