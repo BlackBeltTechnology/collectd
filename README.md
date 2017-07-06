@@ -27,7 +27,7 @@ Add `deploy` argument to upload artifacts to Sonatype OSS Repository.
 Install as Apache Karaf feature (Apache Felix SCR and Jasypt encryption dependencies are installed too).
 
 ~~~~
-feature:repo-add mvn:hu.blackbelt/collectd-karaf-feature/1.0.1/xml/karaf4-features
+feature:repo-add mvn:hu.blackbelt/collectd-feature/1.0.1/xml/karaf4-features
 feature:install collectd
 ~~~~
 
