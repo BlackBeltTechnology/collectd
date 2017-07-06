@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<features name="collectd-feature-${project.version}" xmlns="http://karaf.apache.org/xmlns/features/v1.4.0">
+    <feature name="collectd" description="Bundles for Collectd" version="${project.version}">
+        <requirement>osgi.ee;filter:=&quot;(&amp;(osgi.ee=JavaSE)(version&gt;=${requirement.java.version}))&quot;</requirement>
+
+        <feature dependency="true" prerequisite="true">scr</feature>
+
+        <bundle start-level="78">mvn:${project.groupId}/collectd-core/${project.version}</bundle>
+        <bundle start-level="79">mvn:${project.groupId}/collectd-osgi/${project.version}</bundle>
+    </feature>
+
+    <feature name="collectd-commands" description="Collectd bundles for Apache Karaf commands" version="${project.version}">
+        <feature dependency="true" version="${project.version}">collectd</feature>
+
+        <bundle start-level="80">mvn:${project.groupId}/collectd-commands/${project.version}</bundle>
+    </feature>
+
+    <feature name="collectd-jmx" description="Collectd JMX bundles" version="${project.version}">
+        <feature dependency="true" version="${project.version}">collectd</feature>
+
+        <bundle start-level="80">mvn:${project.groupId}/collectd-jmx/${project.version}</bundle>
+    </feature>
+</features>

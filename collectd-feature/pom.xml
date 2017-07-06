@@ -3,8 +3,9 @@
 
     <parent>
         <groupId>hu.blackbelt</groupId>
-        <artifactId>collectd</artifactId>
-        <version>1.0.0</version>
+        <artifactId>collectd-parent</artifactId>
+        <version>1.0.1</version>
+        <relativePath>../collectd-parent</relativePath>
     </parent>
 
     <artifactId>collectd-feature</artifactId>
@@ -39,12 +40,7 @@
                         <configuration>
                             <artifacts>
                                 <artifact>
-                                    <file>target/classes/fuse62-features.xml</file>
-                                    <type>xml</type>
-                                    <classifier>fuse62-features</classifier>
-                                </artifact>
-                                <artifact>
-                                    <file>target/classes/karaf4-features.xml</file>
+                                    <file>target/classes/collectd-feature.xml</file>
                                     <type>xml</type>
                                     <classifier>karaf4-features</classifier>
                                 </artifact>
@@ -69,4 +65,8 @@
             </plugin>
         </plugins>
     </build>
+
+    <properties>
+        <requirement.java.version>${java.version}</requirement.java.version>
+    </properties>
 </project>
