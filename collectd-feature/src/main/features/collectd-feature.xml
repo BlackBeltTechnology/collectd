@@ -8,13 +8,13 @@
     </feature>
 
     <feature name="collectd-commands" description="Collectd bundles for Apache Karaf commands" version="${project.version}">
-        <feature dependency="true" version="${project.version}">collectd</feature>
+        <feature>collectd</feature>
 
         <bundle start-level="80">mvn:${project.groupId}/collectd-commands/${project.version}</bundle>
     </feature>
 
     <feature name="collectd-jmx" description="Collectd JMX bundles" version="${project.version}">
-        <feature dependency="true" version="${project.version}">collectd</feature>
+        <feature>collectd</feature>
 
         <bundle start-level="80">mvn:${project.groupId}/collectd-jmx/${project.version}</bundle>
     </feature>
